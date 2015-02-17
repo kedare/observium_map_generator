@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 """
- graph.py       A small tool that allows you to generate a visual representation of your devices and links using discovery 
+ graph.py       A small tool that allows you to generate a visual representation of your devices and links using discovery
                 protocols from the links table of Observium
 
  Author:        Mathieu Poussin <mathieu.poussin@oxalide.com>
@@ -16,7 +16,7 @@
  FreeBSD:       cd /usr/ports/*/py-MySQLdb && make install clean
 
  Tested on:     Python 2.7.5 / Ubuntu 13.10
-  
+
 """
 import subprocess, sys, os, json
 import MySQLdb, MySQLdb.cursors, pydot, colour
@@ -27,7 +27,7 @@ import MySQLdb, MySQLdb.cursors, pydot, colour
     especially as more features want to be added to this wrapper.
     and
     Take the amount of threads we want to run in parallel from the commandline
-    if None are given or the argument was garbage, fall back to default of 16 
+    if None are given or the argument was garbage, fall back to default of 16
 """
 try:
     import argparse
@@ -99,6 +99,8 @@ exit
 
 query_template = """
 SELECT
+  d.device_id AS local_device_id,
+  rd.device_id AS remote_device_id,
   UPPER(d.hostname) AS local_hostname,
   p.port_id AS local_port_id,
   p.ifName AS local_port,
@@ -132,7 +134,7 @@ WHERE
 
 scanned_ports = []
 scanned_devices = []
-graph = pydot.Dot(graph_type='digraph', rankdir='LR', fontname="Verdana", bgcolor="black")
+graph = pydot.Dot(graph_type='digraph', rankdir='LR', fontname="helvetica", bgcolor="black")
 debug_id = 0
 this_device = hostname
 
@@ -144,18 +146,18 @@ def discover_links(graph, this_device):
         if((not [link["local_hostname"],link["local_port"]] in scanned_ports) and (not [link["remote_hostname"],link["remote_port"]] in scanned_ports)):
             sys.stdout.write(">")
             sys.stdout.flush()
-            from_label = "<<B>{device}</B><BR/><U>{hardware}</U>>".format(device=link["local_hostname"], hardware=link["hardware"])
-            to_label = "<<B>{device}</B><BR/><U>{hardware}</U>>".format(device=link["remote_hostname"], hardware=link["remote_hardware"])
-            from_node = pydot.Node(link["local_hostname"], label=from_label, style="filled", fillcolor="#323232", color="#646464", fontcolor="white")
+            from_label = """<<B>{device}</B><BR/><U>{hardware}</U>>""".format(device=link["local_hostname"], hardware=link["hardware"])
+            to_label = """<<B>{device}</B><BR/><U>{hardware}</U>>""".format(device=link["remote_hostname"], hardware=link["remote_hardware"])
+            from_node = pydot.Node(link["local_hostname"], label=from_label, style="filled", fillcolor="#323232", color="#646464", fontcolor="white", fontname="helvetica", href="https://obs.example.net/device/device={device_id}/".format(device_id=link["local_device_id"]))
             graph.add_node(from_node)
-            to_node = pydot.Node(link["remote_hostname"], label=to_label, style="filled", fillcolor="#323232", color="#646464", fontcolor="white")
+            to_node = pydot.Node(link["remote_hostname"], label=to_label, style="filled", fillcolor="#323232", color="#646464", fontcolor="white", fontname="helvetica", href="https://obs.example.net/device/device={device_id}/".format(device_id=link["remote_device_id"]))
             graph.add_node(to_node)
             usage_perc = max(link["local_in_octets_perc"],link["local_out_octets_perc"])
             if usage_perc <= 100:
               color = "%s" % colors_scale[usage_perc]
             else:
               color = "purple"
- 
+
             if link["local_port_speed"] == 10000:
               size = 8
             elif link["local_port_speed"] == 1000:
@@ -163,7 +165,7 @@ def discover_links(graph, this_device):
             else:
               size = 1
 
-            edge = pydot.Edge(from_node, to_node, color=color, fontcolor="white", fontsize=8, penwidth=size, label="{from_if} -> {to_if}; Rx: {rx}, Tx: {tx}".format(from_if=link["local_port"], to_if=link["remote_port"], rx=sizeof_fmt(link["local_in_octets_rate"]), tx=sizeof_fmt(link["local_out_octets_rate"])))
+            edge = pydot.Edge(from_node, to_node, color=color, fontcolor="white", fontsize=10, fontname="helvetica", penwidth=size, label="{from_if} -> {to_if}; Rx: {rx}, Tx: {tx}".format(from_if=link["local_port"], to_if=link["remote_port"], rx=sizeof_fmt(link["local_in_octets_rate"]), tx=sizeof_fmt(link["local_out_octets_rate"])), href="https://obs.example.net/device/device={device_id}/tab=port/port={port_id}/".format(device_id=link["local_device_id"], port_id=link["local_port_id"]))
             graph.add_edge(edge)
             scanned_ports.append([link["local_hostname"],link["local_port"]])
             scanned_ports.append([link["remote_hostname"],link["remote_port"]])
@@ -181,12 +183,13 @@ def discover_links(graph, this_device):
     sys.stdout.write("<")
     sys.stdout.flush()
     return graph
-	
+
 sys.stdout.write("\nGenerating graph : ")
 sys.stdout.flush()
 graph = discover_links(graph, this_device)
 sys.stdout.write("\nWriting PNG : ")
 sys.stdout.flush()
+graph.write_raw('%s_map.dot' % (this_device))
 graph.write_png('%s_map.png' % (this_device))
 sys.stdout.write("Ok ! \n")
 db.close()
