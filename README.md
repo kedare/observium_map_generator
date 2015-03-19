@@ -17,9 +17,9 @@ How to use :
 ```
 #!/bin/bash
 
-cd /usr/local/obs/html/graph/
+cd /opt/observium/html/graph/
 
-/usr/bin/php /usr/local/obs/discovery.php -h all -m discovery-protocols
+/usr/bin/php /opt/observium/discovery.php -h all -m discovery-protocols
 
-python /usr/local/obs/graph.py CHANGEME
+python /opt/observium/graph.py CHANGEME
 ```
