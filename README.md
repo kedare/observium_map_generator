@@ -14,7 +14,7 @@ How to use :
 - Setup a cron that call a bash script like this one (adapt it to your setup)
 - Adapt map.php by changing CHANGEME.dot do your dotfile
 
-<code>
+```
 #!/bin/bash
 
 cd /usr/local/obs/html/graph/
@@ -22,4 +22,4 @@ cd /usr/local/obs/html/graph/
 /usr/bin/php /usr/local/obs/discovery.php -h all -m discovery-protocols
 
 python /usr/local/obs/graph.py CHANGEME
-</code>
+```
