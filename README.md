@@ -9,10 +9,10 @@ Map.php allows you to see a svg output in your browser with clickable links to y
 How to use : 
 
 - Install mysql, pydot, and colour python libraries
-- Puts graph.py in your observium root and graph.php in a subdirectory in your html directory
-- Grab Viz.js in the map.php directory ( http://mdaines.github.io/viz.js/viz.js )
+- Put graph.py in your observium root and graph.php in a subdirectory in your html directory
+- Place Viz.js in the map.php directory ( http://mdaines.github.io/viz.js/viz.js )
 - Setup a cron that call a bash script like this one (adapt it to your setup)
-- Adapt map.php by changing CHANGEME.dot do your dotfile
+- Modify map.php by changing CHANGEME.dot do your dotfile (used in the cron script
 
 ```
 #!/bin/bash
