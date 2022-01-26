@@ -137,12 +137,10 @@ scanned_devices = []
 graph = pydot.Dot(graph_type='digraph', rankdir='LR', fontname="helvetica", bgcolor="black")
 debug_id = 0
 this_device = hostname
-print(hostname)
 
 def discover_links(graph, this_device):
     global debug_id
     cursor.execute(query_template % this_device)
-    #cursor.execute(query_template, this_device)
     data = cursor.fetchall()
     for link in data:
         if((not [link["local_hostname"],link["local_port"]] in scanned_ports) and (not [link["remote_hostname"],link["remote_port"]] in scanned_ports)):
