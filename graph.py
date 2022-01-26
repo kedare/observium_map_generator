@@ -121,15 +121,15 @@ FROM
   `devices` as rd,
   `ports` AS p,
   `ports` as rp,
-  `links` AS l,
-  `ports-state` AS s
+  `neighbours` AS l,
+  `ports` AS s
 WHERE
-  p.port_id = l.local_port_id AND
+  p.port_id = l.port_id AND
   p.device_id = d.device_id AND
   rp.port_id = l.remote_port_id AND
   rp.device_id = rd.device_id AND
   p.port_id = s.port_id AND
-  UPPER(d.hostname) = UPPER(%s);
+  UPPER(d.hostname) = UPPER('%s');
 """
 
 scanned_ports = []
@@ -140,7 +140,7 @@ this_device = hostname
 
 def discover_links(graph, this_device):
     global debug_id
-    cursor.execute(query_template, this_device)
+    cursor.execute(query_template % this_device)
     data = cursor.fetchall()
     for link in data:
         if((not [link["local_hostname"],link["local_port"]] in scanned_ports) and (not [link["remote_hostname"],link["remote_port"]] in scanned_ports)):
